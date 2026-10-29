@@ -1,0 +1,61 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "gyma",
+  "version": "1.0.0",
+  "identifier": "com.alp.gyma",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "gyma",
+        "url": "index.html",
+        "width": 1280,
+        "height": 860,
+        "minWidth": 380,
+        "minHeight": 500,
+        "center": true
+      },
+      {
+        "label": "widget",
+        "title": "gyma widget",
+        "url": "index.html?view=widget",
+        "width": 180,
+        "height": 180,
+        "x": 12,
+        "y": 140,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "resizable": false,
+        "alwaysOnBottom": true,
+        "skipTaskbar": true,
+        "visibleOnAllWorkspaces": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app",
+      "dmg"
+    ],
+    "category": "Productivity",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
