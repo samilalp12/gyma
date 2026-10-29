@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reminderTime: '23:00',
   lateCheckinUntil: '12:00',
   theme: 'dark',
+  screenTimeEnabled: false,
   focusCategories: [
     { id: 'ders', name: 'Ders', color: '#3987e5' },
     { id: 'proje', name: 'Proje', color: '#199e70' },

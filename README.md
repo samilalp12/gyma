@@ -15,6 +15,7 @@ Tamamen Türkçe, **hesap yok, sunucu yok**: tüm veriler senin cihazında (Inde
 - **Korelasyonlar:** "Seni ne etkiliyor?" — uyku, ekran süresi, sabah rutini, odak ve disiplin arasındaki ilişkiler.
 - **Heatmap'ler:** gün skoru, ekran süresi limit uyumu, disiplin, önemli işler, odak.
 - **Masaüstü uygulaması (macOS):** menü çubuğu ikonu ve masaüstünde duran küçük widget (odak, bugün, not, hedef, özet).
+- Ekran süresi takibi isteğe bağlı (Ayarlar → Ekran süresi; varsayılan kapalı).
 - Açık / koyu tema, JSON dışa / içe aktarma.
 
 ## Çalıştırma (web)
@@ -62,7 +63,7 @@ src-tauri/     macOS uygulaması (Tauri): pencereler, menü çubuğu, otomatik b
 | --------------- | --------------------- | ---------------------------------------------------------------------- |
 | `settings`      | `id = 'app'`          | skor ağırlıkları, hatırlatma saati, sabah check-in sınırı, tema        |
 | `apps`          | `id`                  | ad, renk, günlük limit, sıra, arşiv (silinen uygulamanın geçmişi kalır) |
-| `days`          | `date` (YYYY-MM-DD)   | ekran dakikaları, telefon toplam ekran süresi, temiz mi, porno, yeltenme sayısı, erteleme sayısı, tetikleyici, uyku (saat), mood (1–10), enerji (1–5), kilo (kg), not, kapandı mı |
+| `days`          | `date` (YYYY-MM-DD)   | ekran dakikaları, telefon toplam ekran süresi, temiz mi, tetikleyici içerik, dürtü sayısı, erteleme sayısı, tetikleyici, uyku (saat), mood (1–10), enerji (1–5), kilo (kg), not, kapandı mı |
 | `routines`      | `id`                  | ad, günün bölümü (sabah / gün içi / akşam), haftanın günleri, başlangıç, arşiv, `measure: 'kg'` = ölçüm rutini |
 | `routineChecks` | `[routineId+date]`    | yapıldı mı                                                             |
 | `goals`         | `id`                  | haftalık / aylık hedef: dönem başlangıcı, tür (`bar` = 0–100 ilerleme, `check` = tek iş), ilerleme, tamamlandı, sıra |
@@ -76,7 +77,7 @@ bileşenlerinin ağırlıklı ortalaması; varsayılan ağırlıklar eşit (⅓ 
 
 - `Enter` sonraki adım (ekran süresi adımında sonraki kutu), `Shift+Enter` geri
 - Rutinler: `1`–`9` tikle, `+`/`−` erteleme sayısı
-- Disiplin: `E`/`H` sırayla "temiz miyim" ve "porno izledim mi" sorularını yanıtlar, `0`–`9` yeltenme sayısı
+- Disiplin: `E`/`H` sırayla "temiz miyim" ve "tetikleyici içeriğe baktım mı" sorularını yanıtlar, `0`–`9` dürtü sayısı
 - Uyku: `7,5` ya da `7:30` yaz, Enter (ya da hazır saatlerden birine tıkla)
 - Mood/enerji: önce mood (`1`–`9`, `0` = 10), sonra enerji (`1`–`5`), ör. `8` `3`
 

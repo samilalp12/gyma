@@ -5,12 +5,23 @@ import { saveDay } from '../../db/actions';
 import { cn, Kbd } from '../../components/ui';
 import { useData } from '../../hooks/useAppData';
 import { checkinTarget } from '../../lib/checkin';
+import { screenOn } from '../../lib/metrics';
 import { addDaysISO, fmtLong, relativeLabel } from '../../lib/date';
 import { DoneView } from './DoneView';
 import { type CheckinForm, formFromDay, formToPatch } from './form';
 import { StepDiscipline, StepMood, StepNote, StepScreen, StepSleep, StepTasks } from './steps';
 
-const STEPS = ['Ekran süresi', 'Rutinler & işler', 'Disiplin', 'Uyku', 'Mood & enerji', 'Not'];
+type StepKey = 'screen' | 'tasks' | 'discipline' | 'sleep' | 'mood' | 'note';
+
+/** Tüm adımlar; ?step=N bu listeye göre (1 = ekran süresi, 3 = disiplin…) */
+const ALL_STEPS: { key: StepKey; label: string }[] = [
+  { key: 'screen', label: 'Ekran süresi' },
+  { key: 'tasks', label: 'Rutinler & işler' },
+  { key: 'discipline', label: 'Disiplin' },
+  { key: 'sleep', label: 'Uyku' },
+  { key: 'mood', label: 'Mood & enerji' },
+  { key: 'note', label: 'Not' },
+];
 
 export function CheckinPage() {
   const { date: param } = useParams();
@@ -23,11 +34,23 @@ export function CheckinPage() {
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today) return <Navigate to="/checkin" replace />;
   const stepParam = Number(search.get('step'));
-  const initialStep = stepParam >= 1 && stepParam <= STEPS.length ? stepParam - 1 : null;
-  return <Wizard key={`${date}-${initialStep}`} date={date} initialStep={initialStep} autoYesterday={autoYesterday} />;
+  const steps = screenOn(data) ? ALL_STEPS : ALL_STEPS.filter((x) => x.key !== 'screen');
+  const wanted = ALL_STEPS[stepParam - 1]?.key;
+  const initialStep = wanted ? Math.max(0, steps.findIndex((x) => x.key === wanted)) : null;
+  return <Wizard key={`${date}-${initialStep}-${steps.length}`} date={date} initialStep={initialStep} autoYesterday={autoYesterday} steps={steps} />;
 }
 
-function Wizard({ date, initialStep, autoYesterday }: { date: string; initialStep: number | null; autoYesterday: boolean }) {
+function Wizard({
+  date,
+  initialStep,
+  autoYesterday,
+  steps: STEPS,
+}: {
+  date: string;
+  initialStep: number | null;
+  autoYesterday: boolean;
+  steps: { key: StepKey; label: string }[];
+}) {
   const data = useData();
   const navigate = useNavigate();
   const prevDay = data.days.get(date);
@@ -69,7 +92,7 @@ function Wizard({ date, initialStep, autoYesterday }: { date: string; initialSte
       const from = stepRef.current;
       const to = Math.max(0, Math.min(STEPS.length, target));
       if (to === from) return;
-      if (from === 0 && to > 0) {
+      if (STEPS[from]?.key === 'screen' && to > from) {
         // Ekran adımı geçildiyse boş bırakılan uygulamalar 0 dk sayılır
         const filled = { ...formRef.current.screen };
         let changed = false;
@@ -166,7 +189,7 @@ function Wizard({ date, initialStep, autoYesterday }: { date: string; initialSte
       {!done && (
         <div className="mb-5">
           <div className="flex gap-1.5">
-            {STEPS.map((s, i) => (
+            {STEPS.map(({ label: s }, i) => (
               <button key={s} onClick={() => void goTo(i)} className="group flex-1 cursor-pointer text-left" title={s}>
                 <div className={cn('h-1.5 rounded-full', i <= step ? 'bg-accent' : 'bg-card-2 group-hover:bg-line')} />
                 <div className={cn('mt-1.5 hidden text-[11px] sm:block', i === step ? 'text-fg' : 'text-muted')}>{s}</div>
@@ -183,16 +206,16 @@ function Wizard({ date, initialStep, autoYesterday }: { date: string; initialSte
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="text-lg font-semibold">
               <span className="mr-2 text-muted">{step + 1}/{STEPS.length}</span>
-              {STEPS[step]}
+              {STEPS[step].label}
             </h2>
           </div>
 
-          {step === 0 && <StepScreen form={form} update={update} />}
-          {step === 1 && <StepTasks date={date} form={form} update={update} />}
-          {step === 2 && <StepDiscipline form={form} update={update} />}
-          {step === 3 && <StepSleep date={date} form={form} update={update} onDone={next} />}
-          {step === 4 && <StepMood form={form} update={update} onDone={next} />}
-          {step === 5 && <StepNote form={form} update={update} />}
+          {STEPS[step].key === 'screen' && <StepScreen form={form} update={update} />}
+          {STEPS[step].key === 'tasks' && <StepTasks date={date} form={form} update={update} />}
+          {STEPS[step].key === 'discipline' && <StepDiscipline form={form} update={update} />}
+          {STEPS[step].key === 'sleep' && <StepSleep date={date} form={form} update={update} onDone={next} />}
+          {STEPS[step].key === 'mood' && <StepMood form={form} update={update} onDone={next} />}
+          {STEPS[step].key === 'note' && <StepNote form={form} update={update} />}
 
           <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
             <button className="btn-ghost" onClick={back} disabled={step === 0}>

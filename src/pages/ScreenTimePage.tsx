@@ -8,7 +8,7 @@ import { useData } from '../hooks/useAppData';
 import { useChartTheme } from '../hooks/useChartTheme';
 import { screenCell } from '../lib/cells';
 import { addDaysISO, dateRange, formatMinutes, lastNDays, weekStartISO } from '../lib/date';
-import { avg, pctChange, phoneTotal, screenStatus, screenTotal, type AppData } from '../lib/metrics';
+import { avg, pctChange, phoneTotal, screenOn, screenStatus, screenTotal, type AppData } from '../lib/metrics';
 
 
 /** Veri girilen (check-in'de ekran adımı doldurulan) günler */
@@ -136,6 +136,24 @@ export function ScreenTimePage() {
 
   // Grafikte: aktif uygulamalar + verisi olan arşivlenmişler
   const chartApps = apps.filter((a) => !a.archived || summary.rows.some((r) => r.id === a.id));
+  if (!screenOn(data)) {
+    return (
+      <>
+        <PageHeader title="Ekran Süresi" />
+        <EmptyState
+          icon={<Smartphone size={28} />}
+          title="Ekran süresi takibi kapalı"
+          text="Ayarlar’dan açtığında check-in adımı, grafikler ve gün skorundaki payı geri gelir. Önceki verilerin duruyor."
+          action={
+            <Link to="/ayarlar" className="btn-primary">
+              Ayarlara git
+            </Link>
+          }
+        />
+      </>
+    );
+  }
+
   if (data.activeApps.length === 0 && !hasAnyScreen) {
     return (
       <>

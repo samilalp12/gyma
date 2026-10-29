@@ -24,11 +24,13 @@ import { DAY_PARTS } from '../lib/constants';
 import { getAutostart, isDesktopApp, setAutostart } from '../lib/desktop';
 
 export function SettingsPage() {
+  const { settings } = useData();
   return (
     <>
       <PageHeader title="Ayarlar" />
       <div className="space-y-5">
-        <AppsSection />
+        <ScreenToggle />
+        {settings.screenTimeEnabled !== false && <AppsSection />}
         <RoutinesSection />
         <div className="grid gap-5 lg:grid-cols-2">
           <WeightsSection />
@@ -41,6 +43,25 @@ export function SettingsPage() {
         <DataSection />
       </div>
     </>
+  );
+}
+
+/* ---------------- Ekran süresi aç/kapa ---------------- */
+
+function ScreenToggle() {
+  const { settings } = useData();
+  const on = settings.screenTimeEnabled !== false;
+  return (
+    <Card title="Ekran süresi">
+      <label className="flex cursor-pointer items-center gap-3 text-sm">
+        <input type="checkbox" className="h-4 w-4 accent-[var(--accent)]" checked={on} onChange={(e) => void saveSettings({ screenTimeEnabled: e.target.checked })} />
+        Ekran süresi takibi
+      </label>
+      <p className="mt-2 text-xs text-muted">
+        Kapalıyken check-in’deki ekran süresi adımı, Ekran Süresi sekmesi, gün skorundaki ekran payı ve ilgili grafikler gizlenir.
+        Daha önce girilen veriler silinmez; açınca geri gelir.
+      </p>
+    </Card>
   );
 }
 
@@ -280,13 +301,14 @@ function RoutinesSection() {
 function WeightsSection() {
   const { settings } = useData();
   const w = settings.weights;
-  const total = w.routines + w.screen + w.discipline;
+  const screen = settings.screenTimeEnabled !== false;
+  const total = w.routines + (screen ? w.screen : 0) + w.discipline;
   const set = (k: keyof ScoreWeights, v: number) => void saveSettings({ weights: { ...w, [k]: v } });
   const items: { k: keyof ScoreWeights; label: string }[] = [
     { k: 'routines', label: 'Rutin tamamlanma' },
     { k: 'screen', label: 'Ekran süresi limit uyumu' },
     { k: 'discipline', label: 'Disiplin (temiz gün)' },
-  ];
+  ].filter((x) => screen || x.k !== 'screen') as { k: keyof ScoreWeights; label: string }[];
   return (
     <Card
       title="Gün skoru ağırlıkları"

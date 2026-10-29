@@ -354,7 +354,7 @@ function YesNo({
 }
 
 export function StepDiscipline({ form, update }: StepProps) {
-  // Klavye: E/H aktif soruyu yanıtlar ve sonrakine geçer; rakamlar yeltenme sayısını girer
+  // Klavye: E/H aktif soruyu yanıtlar ve sonrakine geçer; rakamlar dürtü sayısını girer
   const [row, setRow] = useState<0 | 1>(form.clean == null ? 0 : 1);
 
   const answer = (v: boolean) => {
@@ -380,7 +380,7 @@ export function StepDiscipline({ form, update }: StepProps) {
       <div className="space-y-2">
         <YesNo
           question="Bugün temiz miyim?"
-          hint="Mastürbasyon / boşalma olmadı"
+          hint="Bıraktığım alışkanlığa bugün dönmedim"
           value={form.clean}
           goodWhen
           active={row === 0}
@@ -391,7 +391,7 @@ export function StepDiscipline({ form, update }: StepProps) {
           }}
         />
         <YesNo
-          question="Porno izledim mi?"
+          question="Tetikleyici içeriğe baktım mı?"
           hint="Kısa süreli bakmak da sayılır"
           value={form.porn}
           goodWhen={false}
@@ -401,14 +401,14 @@ export function StepDiscipline({ form, update }: StepProps) {
         />
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-bg px-4 py-3">
           <div className="min-w-0">
-            <div className="text-sm font-medium">Kaç kez yeltendim?</div>
-            <div className="text-xs text-muted">Başlayıp bıraktıysan ya da dürtüye kapılıp durduysan — boşalmasan da say</div>
+            <div className="text-sm font-medium">Kaç kez dürtüye kapıldım?</div>
+            <div className="text-xs text-muted">Başlayıp vazgeçtiysen de say</div>
           </div>
           <Counter value={form.urges} onChange={(v) => update({ urges: v })} />
         </div>
       </div>
       <p className="mt-2 text-xs text-muted">
-        <Kbd>E</Kbd>/<Kbd>H</Kbd> sırayla soruları yanıtlar · <Kbd>0</Kbd>–<Kbd>9</Kbd> yeltenme sayısı
+        <Kbd>E</Kbd>/<Kbd>H</Kbd> sırayla soruları yanıtlar · <Kbd>0</Kbd>–<Kbd>9</Kbd> dürtü sayısı
       </p>
 
       {slipped && (

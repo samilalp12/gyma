@@ -12,7 +12,7 @@ import { useData } from '../hooks/useAppData';
 import { scoreCell } from '../lib/cells';
 import { moodEmoji } from '../lib/constants';
 import { addDaysISO, dateRange, fmtLong, formatHours, formatMinutes, isoWeekday, lastNDays, nowHHmm, weekStartISO } from '../lib/date';
-import { completion, dayScore, disciplineStats, habitStats, pctChange, periodStats } from '../lib/metrics';
+import { completion, dayScore, disciplineStats, habitStats, pctChange, periodStats, screenOn } from '../lib/metrics';
 import { focusTotal } from '../lib/focus';
 
 /** Duruma göre kısa, cesaretlendirici bir cümle */
@@ -26,6 +26,18 @@ function motivationLine(data: ReturnType<typeof useData>): string {
   if (c.total > 0 && c.done / c.total >= 0.5) return 'Yarısını geçtin, devam 👊';
   if (ds.current > 0) return `Temiz serin ${ds.current} gün. Bir gün daha ekle ✨`;
   return 'Küçük bir adım yeter: bir iş seç, 25 dakika başlat.';
+}
+
+/** "Rutinler %50 · disiplin %50" — ekran süresi kapalıysa onu dışarıda bırakır */
+function weightText(data: ReturnType<typeof useData>) {
+  const w = data.settings.weights;
+  const parts: [string, number][] = [
+    ['Rutinler', w.routines],
+    ...(screenOn(data) ? ([['ekran süresi uyumu', w.screen]] as [string, number][]) : []),
+    ['disiplin', w.discipline],
+  ];
+  const total = parts.reduce((a, [, v]) => a + v, 0) || 1;
+  return parts.map(([k, v]) => `${k} %${Math.round((v / total) * 100)}`).join(' · ');
 }
 
 function greeting() {
@@ -125,11 +137,12 @@ export function OverviewPage() {
                   {ds.current} <span className="text-base font-normal text-muted">gün</span>
                 </>
               }
-              sub={`En uzun ${ds.longest} · porno yok serisi ${ds.pornFreeCurrent}`}
+              sub={`En uzun ${ds.longest} · içeriksiz seri ${ds.pornFreeCurrent}`}
               tone={ds.current > 0 ? 'good' : undefined}
               to="/disiplin"
             />
-            {stats.thisWeek.phoneAvg != null ? (
+            {screenOn(data) &&
+              (stats.thisWeek.phoneAvg != null ? (
               <Stat
                 label="Telefon · bu hafta"
                 value={formatMinutes(stats.thisWeek.phoneAvg)}
@@ -151,7 +164,7 @@ export function OverviewPage() {
                 }
                 to="/ekran"
               />
-            )}
+            ))}
             <Stat
               label="Erteleme · son 7 gün"
               value={stats.habits7.procrastAvg != null ? `${stats.habits7.procrastAvg.toFixed(1)}` : '—'}
@@ -179,8 +192,7 @@ export function OverviewPage() {
           >
             <Heatmap getCell={getCell} onSelect={(d) => navigate(`/checkin/${d}`)} legend={{ low: '0', high: '100' }} />
             <p className="mt-3 text-xs text-muted">
-              Rutinler %{data.settings.weights.routines} · ekran süresi uyumu %{data.settings.weights.screen} · disiplin %
-              {data.settings.weights.discipline} ağırlıkla hesaplanır. Ağırlıkları Ayarlar’dan değiştirebilirsin.
+              {weightText(data)} ağırlıkla hesaplanır. Ağırlıkları Ayarlar’dan değiştirebilirsin.
             </p>
           </Card>
         </>

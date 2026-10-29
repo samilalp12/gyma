@@ -24,6 +24,11 @@ export interface AppData {
   today: ISODate;
 }
 
+/** Ekran süresi takibi açık mı? (Ayarlar → Ekran süresi) */
+export function screenOn(data: AppData): boolean {
+  return data.settings.screenTimeEnabled !== false;
+}
+
 /* ---------------- Rutin / iş tamamlanma ---------------- */
 
 export function isRoutineDue(r: Routine, date: ISODate): boolean {
@@ -160,8 +165,8 @@ export function dayScore(data: AppData, date: ISODate): DayScore {
   const parts: DayScore = {
     score: null,
     routines: c.rate,
-    screen: s.hasData ? s.compliance : null,
-    // Temiz ama porno izlenmişse yarım puan
+    screen: screenOn(data) && s.hasData ? s.compliance : null,
+    // Temiz ama tetikleyici içerik varsa yarım puan
     discipline: day?.clean == null ? null : day.clean ? (day.porn ? 0.5 : 1) : 0,
   };
   let sum = 0;
@@ -182,7 +187,7 @@ export interface DisciplineStats {
   totalEntered: number;
   last30Clean: number;
   last30Entered: number;
-  /** Porno izlenmeyen günlerin mevcut serisi */
+  /** Tetikleyici içeriksiz günlerin mevcut serisi */
   pornFreeCurrent: number;
 }
 
@@ -235,13 +240,13 @@ export function disciplineStats(data: AppData): DisciplineStats {
   };
 }
 
-/* ---------------- Dürtü / porno / erteleme ---------------- */
+/* ---------------- Dürtü / içerik / erteleme ---------------- */
 
 export interface HabitStats {
-  /** Porno girilen gün sayısı ve bunlardan izlenmeyenler */
+  /** İçerik sorusu girilen gün sayısı ve bunlardan içeriksiz olanlar */
   pornEntered: number;
   pornFree: number;
-  /** Günlük ortalama yeltenme sayısı (girilen günler) */
+  /** Günlük ortalama dürtü sayısı (girilen günler) */
   urgesAvg: number | null;
   urgesTotal: number;
   /** Günlük ortalama erteleme (girilen günler) */

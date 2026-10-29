@@ -23,7 +23,7 @@ import { useData } from '../hooks/useAppData';
 import { useChartTheme } from '../hooks/useChartTheme';
 import { moodEmoji } from '../lib/constants';
 import { addDaysISO, dateRange, fmt, fmtShortDay, formatHours, formatMinutes, lastNDays, weekStartISO } from '../lib/date';
-import { avg, dayScore, habitStats, overallScreen, pctChange, periodStats } from '../lib/metrics';
+import { avg, dayScore, habitStats, overallScreen, pctChange, periodStats, screenOn } from '../lib/metrics';
 
 export function WeeklyPage() {
   const data = useData();
@@ -89,13 +89,15 @@ export function WeeklyPage() {
   const hasData = s.daily.some((d) => d.score != null || d.screen != null || d.mood != null || d.sleep != null);
   const { cur, prev } = s;
 
-  const rows: { label: string; cur: string; prev: string; delta: number | null; lowerIsBetter?: boolean; suffix?: string }[] = [
+  const showScreen = screenOn(data);
+  const allRows: { label: string; cur: string; prev: string; delta: number | null; lowerIsBetter?: boolean; suffix?: string; screen?: boolean }[] = [
     {
       label: 'Takip edilen uyg. (günlük ort.)',
       cur: formatMinutes(cur.screenAvg),
       prev: formatMinutes(prev.screenAvg),
       delta: pctChange(cur.screenAvg, prev.screenAvg),
       lowerIsBetter: true,
+      screen: true,
     },
     {
       label: 'Telefon toplamı (günlük ort.)',
@@ -103,6 +105,7 @@ export function WeeklyPage() {
       prev: formatMinutes(prev.phoneAvg),
       delta: pctChange(cur.phoneAvg, prev.phoneAvg),
       lowerIsBetter: true,
+      screen: true,
     },
     {
       label: 'Haftalık hedefler',
@@ -146,14 +149,14 @@ export function WeeklyPage() {
       suffix: ' sa',
     },
     {
-      label: 'Porno izlenmeyen gün',
+      label: 'İçeriksiz gün',
       cur: s.hCur.pornEntered ? `${s.hCur.pornFree}/${s.hCur.pornEntered}` : '—',
       prev: s.hPrev.pornEntered ? `${s.hPrev.pornFree}/${s.hPrev.pornEntered}` : '—',
       delta: s.hCur.pornEntered && s.hPrev.pornEntered ? s.hCur.pornFree - s.hPrev.pornFree : null,
       suffix: ' gün',
     },
     {
-      label: 'Yeltenme (günlük ort.)',
+      label: 'Dürtü (günlük ort.)',
       cur: s.hCur.urgesAvg?.toFixed(1) ?? '—',
       prev: s.hPrev.urgesAvg?.toFixed(1) ?? '—',
       delta: pctChange(s.hCur.urgesAvg, s.hPrev.urgesAvg),
@@ -174,6 +177,7 @@ export function WeeklyPage() {
       suffix: ' puan',
     },
   ];
+  const rows = allRows.filter((r) => showScreen || !r.screen);
 
   return (
     <>
@@ -246,6 +250,7 @@ export function WeeklyPage() {
             </div>
           </div>
 
+          {showScreen && (
           <div className="mb-5 grid gap-5 lg:grid-cols-2">
             <Card title="Hafta boyunca: ekran süresi ve mood">
               <div className="h-56">
@@ -300,6 +305,7 @@ export function WeeklyPage() {
               )}
             </Card>
           </div>
+          )}
 
           <Card title="Uyku" className="mb-5">
             {s.daily.every((d) => d.sleep == null) ? (
@@ -365,7 +371,7 @@ export function WeeklyPage() {
                       {d.score ?? '—'}
                     </span>
                     <span className="w-6 shrink-0 text-center">{moodEmoji(d.mood)}</span>
-                    <span className="w-20 shrink-0 tabular-nums text-muted">{d.screen != null ? formatMinutes(d.screen) : ''}</span>
+                    {showScreen && <span className="w-20 shrink-0 tabular-nums text-muted">{d.screen != null ? formatMinutes(d.screen) : ''}</span>}
                     <span
                       className={cn('w-14 shrink-0 tabular-nums', d.sleep != null && d.sleep < 6 ? 'text-danger' : 'text-muted')}
                       title="Uyku"

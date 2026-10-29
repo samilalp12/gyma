@@ -63,15 +63,15 @@ export function disciplineCell(data: AppData) {
     const day = data.days.get(date);
     if (day?.clean == null) return null;
     const extra: string[] = [];
-    if (day.porn != null) extra.push(day.porn ? 'Porno: izlendi' : 'Porno: yok');
-    if (day.urges) extra.push(`Yeltenme: ${day.urges}`);
+    if (day.porn != null) extra.push(day.porn ? 'İçerik: evet' : 'İçerik: yok');
+    if (day.urges) extra.push(`Dürtü: ${day.urges}`);
     const tail = extra.length ? `\n${extra.join(' · ')}` : '';
     if (!day.clean) {
       const cause = day.trigger?.causes?.join(', ');
       return { level: 4, tone: 'bad', label: `Bozuldu${cause ? ` · ${cause}` : ''}${tail}` };
     }
     const run = runs.get(date) ?? 1;
-    // Temiz ama porno izlendiyse en açık yeşil
+    // Temiz ama tetikleyici içerik varsa en açık yeşil
     const level: HeatLevel = day.porn ? 1 : run >= 14 ? 4 : run >= 7 ? 3 : run >= 3 ? 2 : 1;
     return { level, label: `Temiz · serinin ${run}. günü${tail}` };
   };

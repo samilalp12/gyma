@@ -1,7 +1,7 @@
 import type { ISODate } from '../db/types';
 import { lastNDays } from './date';
 import { focusTotal } from './focus';
-import { type AppData, avg, dueRoutines, isRoutineDone, overallScreen } from './metrics';
+import { type AppData, avg, dueRoutines, isRoutineDone, overallScreen, screenOn } from './metrics';
 
 /**
  * Korelasyon kartı: verilerdeki iki grubu (ör. az / çok uyuduğun günler) bir sonuç
@@ -19,7 +19,7 @@ export interface Insight {
   bN: number;
   /** Değerin biçimi */
   unit: 'num' | 'pct' | 'min';
-  /** Daha düşük olan mı iyi? (yeltenme, erteleme, bozulma) */
+  /** Daha düşük olan mı iyi? (dürtü, erteleme, bozulma) */
   lowerIsBetter: boolean;
   /** Etki büyüklüğü (sıralama için) */
   strength: number;
@@ -91,11 +91,11 @@ export function computeInsights(data: AppData): { insights: Insight[]; daysWithD
 
   const candidates: (Insight | null)[] = [
     compare(dates, lowSleep, mood, { id: 'sleep-mood', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'mood', unit: 'num', lowerIsBetter: false }),
-    compare(dates, lowSleep, urges, { id: 'sleep-urges', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'yeltenme', unit: 'num', lowerIsBetter: true }),
+    compare(dates, lowSleep, urges, { id: 'sleep-urges', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'dürtü', unit: 'num', lowerIsBetter: true }),
     compare(dates, lowSleep, procr, { id: 'sleep-procr', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'erteleme', unit: 'num', lowerIsBetter: true }),
     compare(dates, highScreen, mood, { id: 'screen-mood', aLabel: screenA, bLabel: screenB, metric: 'mood', unit: 'num', lowerIsBetter: false }),
     compare(dates, highScreen, slip, { id: 'screen-slip', aLabel: screenA, bLabel: screenB, metric: 'bozulma oranı', unit: 'pct', lowerIsBetter: true }),
-    compare(dates, highScreen, urges, { id: 'screen-urges', aLabel: screenA, bLabel: screenB, metric: 'yeltenme', unit: 'num', lowerIsBetter: true }),
+    compare(dates, highScreen, urges, { id: 'screen-urges', aLabel: screenA, bLabel: screenB, metric: 'dürtü', unit: 'num', lowerIsBetter: true }),
     compare(dates, morningDone, procr, { id: 'morning-procr', aLabel: 'Sabah rutinini tamamladığın günlerde', bLabel: 'tamamlamadığında', metric: 'erteleme', unit: 'num', lowerIsBetter: true }),
     compare(dates, morningDone, focus, { id: 'morning-focus', aLabel: 'Sabah rutinini tamamladığın günlerde', bLabel: 'tamamlamadığında', metric: 'odak süresi', unit: 'min', lowerIsBetter: false }),
     compare(dates, morningDone, mood, { id: 'morning-mood', aLabel: 'Sabah rutinini tamamladığın günlerde', bLabel: 'tamamlamadığında', metric: 'mood', unit: 'num', lowerIsBetter: false }),
@@ -103,7 +103,9 @@ export function computeInsights(data: AppData): { insights: Insight[]; daysWithD
     compare(dates, (d) => (procr(d) == null ? null : procr(d)! >= 3), slip, { id: 'procr-slip', aLabel: '3+ kez ertelediğin günlerde', bLabel: 'daha az ertelediğinde', metric: 'bozulma oranı', unit: 'pct', lowerIsBetter: true }),
   ];
 
-  const insights = candidates.filter((x): x is Insight => x != null).sort((a, b) => b.strength - a.strength);
+  const noScreen = !screenOn(data);
+  const insights = candidates
+    .filter((x) => !(noScreen && x?.id.startsWith('screen'))).filter((x): x is Insight => x != null).sort((a, b) => b.strength - a.strength);
   return { insights, daysWithData: dates.filter((d) => day(d)).length };
 }
 

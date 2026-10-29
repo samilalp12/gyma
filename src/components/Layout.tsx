@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useData } from '../hooks/useAppData';
 import { useReminder } from '../hooks/useReminder';
 import { checkinTarget } from '../lib/checkin';
+import { screenOn } from '../lib/metrics';
 import { cn } from './ui';
 
 const NAV = [
@@ -25,6 +26,7 @@ export function Layout() {
   const inCheckin = pathname.startsWith('/checkin');
   const checkinDate = checkinTarget(data);
   const yesterdayMissing = checkinDate !== data.today;
+  const nav = NAV.filter((n) => n.to !== '/ekran' || screenOn(data));
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -39,7 +41,7 @@ export function Layout() {
           <span className="hidden text-[15px] font-semibold tracking-tight lg:inline">gyma</span>
         </Link>
         <nav className="flex flex-1 flex-col gap-0.5 px-2.5">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+          {nav.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -79,8 +81,9 @@ export function Layout() {
       </main>
 
       {/* Mobil tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-8 border-t border-line bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-        {NAV.map(({ to, label, short, icon: Icon, end }) => (
+      <nav style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}
+        className="fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+        {nav.map(({ to, label, short, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}

@@ -8,7 +8,7 @@ import { useData } from '../hooks/useAppData';
 import { disciplineCell } from '../lib/cells';
 import { slotLabel, TIME_SLOTS } from '../lib/constants';
 import { addDaysISO, fmt, formatMinutes, isoWeekday, lastNDays, WEEKDAY_SHORT } from '../lib/date';
-import { avg, disciplineStats, habitStats, overallScreen, pctChange } from '../lib/metrics';
+import { avg, disciplineStats, habitStats, overallScreen, pctChange, screenOn } from '../lib/metrics';
 
 export function DisciplinePage() {
   const data = useData();
@@ -113,6 +113,7 @@ export function DisciplinePage() {
             {st.totalEntered} kayıtlı günün %{Math.round((st.totalClean / st.totalEntered) * 100)}’i · seri bozulsa da ilerleme sayılır
           </div>
         </div>
+        {screenOn(data) && (
         <div className="rounded-card border border-line bg-card p-4 md:col-span-2">
           <div className="label">Ekran süresi ile ilişki</div>
           <div className="mt-3 grid grid-cols-2 gap-4">
@@ -136,26 +137,27 @@ export function DisciplinePage() {
             </p>
           )}
         </div>
+        )}
       </div>
 
       <div className="mb-5 grid gap-3 md:grid-cols-3">
         <Stat
-          label="Porno · son 30 gün"
+          label="Tetikleyici içerik · son 30 gün"
           value={
             habits.last30.pornEntered ? (
               <>
                 {habits.last30.pornFree}
-                <span className="text-base font-normal text-muted">/{habits.last30.pornEntered} gün izlenmedi</span>
+                <span className="text-base font-normal text-muted">/{habits.last30.pornEntered} gün içeriksiz</span>
               </>
             ) : (
               '—'
             )
           }
           tone={habits.last30.pornEntered ? 'good' : undefined}
-          sub={`İzlenmeyen gün serisi: ${st.pornFreeCurrent} gün`}
+          sub={`İçeriksiz gün serisi: ${st.pornFreeCurrent} gün`}
         />
         <Stat
-          label="Yeltenme · son 7 gün"
+          label="Dürtü · son 7 gün"
           value={habits.last7.urgesAvg != null ? `${habits.last7.urgesAvg.toFixed(1)} / gün` : '—'}
           sub={
             <span className="flex flex-wrap items-center gap-1">
@@ -183,7 +185,7 @@ export function DisciplinePage() {
           getCell={getCell}
           onSelect={(d) => navigate(`/checkin/${d}?step=3`)}
           emptyLabel="Girilmedi"
-          legend={{ low: 'Kısa seri / porno izlendi', high: 'Uzun seri', extra: [{ tone: 'bad', level: 4, label: 'Bozuldu' }] }}
+          legend={{ low: 'Kısa seri / içerik vardı', high: 'Uzun seri', extra: [{ tone: 'bad', level: 4, label: 'Bozuldu' }] }}
         />
       </Card>
 

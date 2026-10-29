@@ -17,6 +17,8 @@ export interface Settings {
   /** 'HH:mm' — bu saatten önce check-in açılırsa, dün kapanmadıysa dünü doldurur */
   lateCheckinUntil: string;
   theme: Theme;
+  /** Ekran süresi takibi açık mı (kapalıyken check-in, skor ve grafiklerden çıkar) */
+  screenTimeEnabled?: boolean;
   /** Odak kategorileri (ders, kitap…) */
   focusCategories?: FocusCategory[];
   /** Çalışan odak seansı (sayfa yenilense de sürer) */
@@ -75,9 +77,9 @@ export interface DayLog {
   energy: number | null;
   /** Önceki gece uyunan süre (saat). Eski kayıtlarda alan olmayabilir. */
   sleep?: number | null;
-  /** Porno izlendi mi (null = girilmedi) */
+  /** Tetikleyici içerik tüketildi mi (null = girilmedi) */
   porn?: boolean | null;
-  /** Kaç kez yeltenildi / dürtüye yaklaşıldı (boşalma olmasa da) */
+  /** Kaç kez dürtüye kapılındı */
   urges?: number | null;
   /** Gün içinde kaç kez erteleme yapıldı */
   procrastination?: number | null;

@@ -5,7 +5,7 @@ import { Stat } from '../../components/ui';
 import { useData } from '../../hooks/useAppData';
 import { moodEmoji } from '../../lib/constants';
 import { fmtLong, formatHours, formatMinutes } from '../../lib/date';
-import { completion, dayScore, disciplineStats, routineStats, screenStatus } from '../../lib/metrics';
+import { completion, dayScore, disciplineStats, routineStats, screenOn, screenStatus } from '../../lib/metrics';
 
 export function DoneView({ date, onEdit }: { date: string; onEdit: () => void }) {
   const data = useData();
@@ -42,12 +42,14 @@ export function DoneView({ date, onEdit }: { date: string; onEdit: () => void })
           value={s.comp.total ? `${s.comp.done}/${s.comp.total}` : '—'}
           sub={s.comp.total ? `%${Math.round((s.comp.done / s.comp.total) * 100)}` : 'Madde yok'}
         />
+        {screenOn(data) && (
         <Stat
           label="Ekran süresi"
           value={s.screen.hasData ? formatMinutes(s.screen.total) : '—'}
           tone={s.screen.over ? 'bad' : s.screen.hasData ? 'good' : undefined}
           sub={s.screen.over ? `${s.screen.overApps.length} uygulamada limit aşıldı` : s.screen.hasData ? 'Limitler içinde' : undefined}
         />
+        )}
         <Stat
           label="Mood / enerji"
           value={day?.mood ? `${moodEmoji(day.mood)} ${day.mood}/10` : '—'}
