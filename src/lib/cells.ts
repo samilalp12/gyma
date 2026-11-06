@@ -65,6 +65,8 @@ export function disciplineCell(data: AppData) {
     const extra: string[] = [];
     if (day.porn != null) extra.push(day.porn ? 'İçerik: evet' : 'İçerik: yok');
     if (day.urges) extra.push(`Dürtü: ${day.urges}`);
+    if (day.morningPhoneOk != null)
+      extra.push(`Sabah: ${day.morningPhoneMin != null ? `${day.morningPhoneMin} dk ` : ''}${day.morningPhoneOk ? '✓' : '✗'}`);
     const tail = extra.length ? `\n${extra.join(' · ')}` : '';
     if (!day.clean) {
       const cause = day.trigger?.causes?.join(', ');

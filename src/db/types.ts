@@ -81,6 +81,10 @@ export interface DayLog {
   porn?: boolean | null;
   /** Kaç kez dürtüye kapılındı */
   urges?: number | null;
+  /** Uyandıktan kaç dakika sonra telefona bakıldı */
+  morningPhoneMin?: number | null;
+  /** Uyanınca en az MORNING_PHONE_LIMIT dk telefona bakılmadı mı */
+  morningPhoneOk?: boolean | null;
   /** Gün içinde kaç kez erteleme yapıldı */
   procrastination?: number | null;
   /** Tartı (kg) — haftalık ölçüm */

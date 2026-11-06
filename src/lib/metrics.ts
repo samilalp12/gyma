@@ -189,6 +189,8 @@ export interface DisciplineStats {
   last30Entered: number;
   /** Tetikleyici içeriksiz günlerin mevcut serisi */
   pornFreeCurrent: number;
+  /** Sabah telefonsuz günlerin mevcut serisi */
+  morningCurrent: number;
 }
 
 export function disciplineStats(data: AppData): DisciplineStats {
@@ -229,7 +231,15 @@ export function disciplineStats(data: AppData): DisciplineStats {
     pc = addDaysISO(pc, -1);
   }
 
+  let mc = data.days.get(today)?.morningPhoneOk == null ? addDaysISO(today, -1) : today;
+  let morningCurrent = 0;
+  while (data.days.get(mc)?.morningPhoneOk === true) {
+    morningCurrent++;
+    mc = addDaysISO(mc, -1);
+  }
+
   return {
+    morningCurrent,
     current,
     longest: Math.max(longest, current),
     totalClean,
@@ -254,6 +264,10 @@ export interface HabitStats {
   procrastTotal: number;
   /** Dönemde "yarına taşı" yapılan iş sayısı (o tarihlere atanmış işlerin erteleme sayısı) */
   movedTasks: number;
+  /** Sabah telefonsuz: girilen gün, başarılı gün, ortalama ilk bakış dakikası */
+  morningEntered: number;
+  morningOk: number;
+  morningAvgMin: number | null;
 }
 
 export function habitStats(data: AppData, dates: ISODate[]): HabitStats {
@@ -262,6 +276,9 @@ export function habitStats(data: AppData, dates: ISODate[]): HabitStats {
   const urges: number[] = [];
   const procs: number[] = [];
   let movedTasks = 0;
+  let morningEntered = 0;
+  let morningOk = 0;
+  const morningMins: number[] = [];
   for (const d of dates) {
     if (d > data.today) continue;
     const day = data.days.get(d);
@@ -271,6 +288,11 @@ export function habitStats(data: AppData, dates: ISODate[]): HabitStats {
     }
     if (day?.urges != null) urges.push(day.urges);
     if (day?.procrastination != null) procs.push(day.procrastination);
+    if (day?.morningPhoneOk != null) {
+      morningEntered++;
+      if (day.morningPhoneOk) morningOk++;
+    }
+    if (day?.morningPhoneMin != null) morningMins.push(day.morningPhoneMin);
     for (const t of data.tasksByDate.get(d) ?? []) movedTasks += t.moved;
   }
   const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
@@ -282,6 +304,9 @@ export function habitStats(data: AppData, dates: ISODate[]): HabitStats {
     procrastAvg: avg(procs),
     procrastTotal: sum(procs),
     movedTasks,
+    morningEntered,
+    morningOk,
+    morningAvgMin: avg(morningMins),
   };
 }
 

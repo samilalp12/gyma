@@ -10,6 +10,10 @@ export interface CheckinForm {
   porn: boolean | null;
   urges: number | null;
   procrastination: number | null;
+  /** Uyanınca ilk dakikalar telefonsuz mu */
+  morningOk: boolean | null;
+  /** Uyandıktan kaç dk sonra telefona bakıldı (input metni) */
+  morningMin: string;
   trigger: Trigger;
   mood: number | null;
   energy: number | null;
@@ -27,6 +31,8 @@ export function formFromDay(day: DayLog | undefined): CheckinForm {
     porn: day?.porn ?? null,
     urges: day?.urges ?? null,
     procrastination: day?.procrastination ?? null,
+    morningOk: day?.morningPhoneOk ?? null,
+    morningMin: day?.morningPhoneMin != null ? String(day.morningPhoneMin) : '',
     trigger: day?.trigger ?? { causes: [] },
     mood: day?.mood ?? null,
     energy: day?.energy ?? null,
@@ -77,6 +83,8 @@ export function formToPatch(form: CheckinForm, prev: DayLog | undefined, apps: T
     porn: form.porn,
     urges: form.urges,
     procrastination: form.procrastination,
+    morningPhoneMin: parseMinutes(form.morningMin),
+    morningPhoneOk: form.morningOk,
     trigger: (form.clean === false || form.porn === true) && hasTrigger ? { ...form.trigger, note: form.trigger.note?.trim() } : undefined,
     mood: form.mood,
     energy: form.energy,

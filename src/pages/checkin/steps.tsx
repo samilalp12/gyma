@@ -5,7 +5,7 @@ import { addTask, deleteTask, moveTaskToNextDay, setRoutineDone, setTaskDone } f
 import { QuadrantBadge } from '../../components/Eisenhower';
 import { Checkbox, cn, Kbd, ProgressBar } from '../../components/ui';
 import { useData } from '../../hooks/useAppData';
-import { CAUSES, ENERGY_LABELS, MOOD_MAX, moodEmoji, moodLabel, PLACES, TIME_SLOTS } from '../../lib/constants';
+import { CAUSES, ENERGY_LABELS, MOOD_MAX, MORNING_PHONE_LIMIT, moodEmoji, moodLabel, PLACES, TIME_SLOTS } from '../../lib/constants';
 import { addDaysISO, fmt, formatHours, formatMinutes } from '../../lib/date';
 import { dueRoutines, isRoutineDone } from '../../lib/metrics';
 import { type CheckinForm, parseMinutes, parsePhoneTotal, parseSleep } from './form';
@@ -355,13 +355,22 @@ function YesNo({
 
 export function StepDiscipline({ form, update }: StepProps) {
   // Klavye: E/H aktif soruyu yanıtlar ve sonrakine geçer; rakamlar dürtü sayısını girer
-  const [row, setRow] = useState<0 | 1>(form.clean == null ? 0 : 1);
+  const [row, setRow] = useState<0 | 1 | 2>(form.clean == null ? 0 : form.porn == null ? 1 : 2);
 
   const answer = (v: boolean) => {
     if (row === 0) {
       update({ clean: v });
       setRow(1);
-    } else update({ porn: v });
+    } else if (row === 1) {
+      update({ porn: v });
+      setRow(2);
+    } else update({ morningOk: v });
+  };
+  // Dakika yazılınca evet/hayır kendiliğinden belirlenir (limit ve üstü = telefonsuz)
+  const setMorningMin = (text: string) => {
+    const clean = text.replace(/[^0-9]/g, '');
+    const n = clean ? Number(clean) : null;
+    update({ morningMin: clean, ...(n != null ? { morningOk: n >= MORNING_PHONE_LIMIT } : {}) });
   };
   useHotkeys((key) => {
     if (key === 'e' || key === 'y') answer(true);
@@ -397,8 +406,58 @@ export function StepDiscipline({ form, update }: StepProps) {
           goodWhen={false}
           active={row === 1}
           onFocus={() => setRow(1)}
-          onChange={(v) => update({ porn: v })}
+          onChange={(v) => {
+            update({ porn: v });
+            setRow(2);
+          }}
         />
+        <div
+          onClick={() => setRow(2)}
+          className={cn('rounded-xl border px-4 py-3', row === 2 ? 'border-muted/60 bg-bg' : 'border-line bg-bg/50')}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-medium">Uyanınca ilk {MORNING_PHONE_LIMIT} dk telefona bakmadım</div>
+              <div className="text-xs text-muted">Sabah telefonsuz başlangıç günün enerjisini belirliyor</div>
+            </div>
+            <div className="flex gap-2">
+              {[true, false].map((v) => (
+                <button
+                  key={String(v)}
+                  type="button"
+                  onClick={() => update({ morningOk: v })}
+                  className={cn(
+                    'w-20 cursor-pointer rounded-lg border py-2 text-sm font-medium',
+                    form.morningOk === v && v && 'border-accent bg-accent-soft text-accent',
+                    form.morningOk === v && !v && 'border-danger bg-danger-soft text-danger',
+                    form.morningOk !== v && 'border-line bg-card text-muted hover:text-fg',
+                  )}
+                >
+                  {v ? 'Evet' : 'Hayır'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted">Uyandıktan</span>
+            <input
+              inputMode="numeric"
+              className="input w-16 py-1 text-right tabular-nums"
+              placeholder="—"
+              value={form.morningMin}
+              onChange={(e) => setMorningMin(e.target.value)}
+              aria-label="Uyandıktan kaç dakika sonra telefona baktın"
+            />
+            <span className="text-muted">dk sonra baktım</span>
+            <span className="flex gap-1">
+              {[5, 10, 20, 30, 60].map((m) => (
+                <button key={m} type="button" className={cn('chip px-2', form.morningMin === String(m) && 'chip-on')} onClick={() => setMorningMin(String(m))}>
+                  {m}
+                </button>
+              ))}
+            </span>
+          </div>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-bg px-4 py-3">
           <div className="min-w-0">
             <div className="text-sm font-medium">Kaç kez dürtüye kapıldım?</div>
@@ -408,7 +467,7 @@ export function StepDiscipline({ form, update }: StepProps) {
         </div>
       </div>
       <p className="mt-2 text-xs text-muted">
-        <Kbd>E</Kbd>/<Kbd>H</Kbd> sırayla soruları yanıtlar · <Kbd>0</Kbd>–<Kbd>9</Kbd> dürtü sayısı
+        <Kbd>E</Kbd>/<Kbd>H</Kbd> sırayla üç soruyu yanıtlar · <Kbd>0</Kbd>–<Kbd>9</Kbd> dürtü sayısı
       </p>
 
       {slipped && (

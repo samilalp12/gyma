@@ -156,6 +156,13 @@ export function WeeklyPage() {
       suffix: ' gün',
     },
     {
+      label: 'Sabah telefonsuz gün',
+      cur: s.hCur.morningEntered ? `${s.hCur.morningOk}/${s.hCur.morningEntered}` : '—',
+      prev: s.hPrev.morningEntered ? `${s.hPrev.morningOk}/${s.hPrev.morningEntered}` : '—',
+      delta: s.hCur.morningEntered && s.hPrev.morningEntered ? s.hCur.morningOk - s.hPrev.morningOk : null,
+      suffix: ' gün',
+    },
+    {
       label: 'Dürtü (günlük ort.)',
       cur: s.hCur.urgesAvg?.toFixed(1) ?? '—',
       prev: s.hPrev.urgesAvg?.toFixed(1) ?? '—',

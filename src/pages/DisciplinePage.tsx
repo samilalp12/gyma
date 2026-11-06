@@ -6,7 +6,7 @@ import { WeightCard } from '../components/WeightCard';
 import { Card, cn, Delta, EmptyState, PageHeader, Stat } from '../components/ui';
 import { useData } from '../hooks/useAppData';
 import { disciplineCell } from '../lib/cells';
-import { slotLabel, TIME_SLOTS } from '../lib/constants';
+import { MORNING_PHONE_LIMIT, slotLabel, TIME_SLOTS } from '../lib/constants';
 import { addDaysISO, fmt, formatMinutes, isoWeekday, lastNDays, WEEKDAY_SHORT } from '../lib/date';
 import { avg, disciplineStats, habitStats, overallScreen, pctChange, screenOn } from '../lib/metrics';
 
@@ -53,7 +53,7 @@ export function DisciplinePage() {
     };
   }, [data]);
 
-  if (st.totalEntered === 0) {
+  if (st.totalEntered === 0 && habits.last30.morningEntered === 0) {
     return (
       <>
         <PageHeader title="Disiplin" />
@@ -110,7 +110,7 @@ export function DisciplinePage() {
           <div className="label">Toplam temiz gün</div>
           <div className="mt-2 text-2xl font-semibold tabular-nums">{st.totalClean}</div>
           <div className="mt-1 text-xs text-muted">
-            {st.totalEntered} kayıtlı günün %{Math.round((st.totalClean / st.totalEntered) * 100)}’i · seri bozulsa da ilerleme sayılır
+            {st.totalEntered ? `${st.totalEntered} kayıtlı günün %${Math.round((st.totalClean / st.totalEntered) * 100)}’i · ` : ''}seri bozulsa da ilerleme sayılır
           </div>
         </div>
         {screenOn(data) && (
@@ -140,7 +140,26 @@ export function DisciplinePage() {
         )}
       </div>
 
-      <div className="mb-5 grid gap-3 md:grid-cols-3">
+      <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Stat
+          label="Sabah telefonsuz · son 30 gün"
+          value={
+            habits.last30.morningEntered ? (
+              <>
+                {habits.last30.morningOk}
+                <span className="text-base font-normal text-muted">/{habits.last30.morningEntered} gün</span>
+              </>
+            ) : (
+              '—'
+            )
+          }
+          tone={habits.last30.morningEntered ? 'good' : undefined}
+          sub={
+            habits.last30.morningEntered
+              ? `Seri ${st.morningCurrent} gün${habits.last30.morningAvgMin != null ? ` · ort. ${Math.round(habits.last30.morningAvgMin)} dk sonra bakış` : ''}`
+              : `Check-in’de “ilk ${MORNING_PHONE_LIMIT} dk” sorusunu yanıtla`
+          }
+        />
         <Stat
           label="Tetikleyici içerik · son 30 gün"
           value={

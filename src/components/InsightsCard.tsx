@@ -22,7 +22,7 @@ export function InsightsCard({ limit = 4, compact = false }: { limit?: number; c
       </div>
       {shown.length === 0 ? (
         <p className="rounded-xl border border-dashed border-line px-4 py-5 text-center text-sm text-muted">
-          Henüz yeterli veri yok. Her gruptan en az 4 gün birikince (genelde 2–3 hafta) uyku, ekran süresi, sabah rutini, odak ve
+          Henüz yeterli veri yok. Her gruptan en az 4 gün birikince (genelde 2–3 hafta) uyku, sabah telefonu, sabah rutini, odak ve
           disiplin arasındaki ilişkiler burada belirecek.
         </p>
       ) : (

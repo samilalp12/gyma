@@ -1,4 +1,5 @@
 import type { ISODate } from '../db/types';
+import { MORNING_PHONE_LIMIT } from './constants';
 import { lastNDays } from './date';
 import { focusTotal } from './focus';
 import { type AppData, avg, dueRoutines, isRoutineDone, overallScreen, screenOn } from './metrics';
@@ -69,6 +70,10 @@ export function computeInsights(data: AppData): { insights: Insight[]; daysWithD
   const slip: Get<number> = (d) => (day(d)?.clean == null ? null : day(d)!.clean ? 0 : 100);
   const screen: Get<number> = (d) => (day(d) ? overallScreen(data, d) : null);
   const focus: Get<number> = (d) => (day(d)?.closed ? focusTotal(data, d) : null);
+  const energy: Get<number> = (d) => day(d)?.energy;
+  const morningPhone: Get<boolean> = (d) => day(d)?.morningPhoneOk;
+  const mpA = `Sabah ilk ${MORNING_PHONE_LIMIT} dk telefona bakmadığın günlerde`;
+  const mpB = 'baktığın günlerde';
   const morningDone: Get<boolean> = (d) => {
     const m = dueRoutines(data, d).filter((r) => r.part === 'sabah');
     if (!m.length || !day(d)) return null;
@@ -90,6 +95,11 @@ export function computeInsights(data: AppData): { insights: Insight[]; daysWithD
   const screenB = 'daha az olduğu günlerde';
 
   const candidates: (Insight | null)[] = [
+    compare(dates, morningPhone, energy, { id: 'mphone-energy', aLabel: mpA, bLabel: mpB, metric: 'enerji', unit: 'num', lowerIsBetter: false }),
+    compare(dates, morningPhone, mood, { id: 'mphone-mood', aLabel: mpA, bLabel: mpB, metric: 'mood', unit: 'num', lowerIsBetter: false }),
+    compare(dates, morningPhone, focus, { id: 'mphone-focus', aLabel: mpA, bLabel: mpB, metric: 'odak süresi', unit: 'min', lowerIsBetter: false }),
+    compare(dates, morningPhone, procr, { id: 'mphone-procr', aLabel: mpA, bLabel: mpB, metric: 'erteleme', unit: 'num', lowerIsBetter: true }),
+    compare(dates, morningPhone, urges, { id: 'mphone-urges', aLabel: mpA, bLabel: mpB, metric: 'dürtü', unit: 'num', lowerIsBetter: true }),
     compare(dates, lowSleep, mood, { id: 'sleep-mood', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'mood', unit: 'num', lowerIsBetter: false }),
     compare(dates, lowSleep, urges, { id: 'sleep-urges', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'dürtü', unit: 'num', lowerIsBetter: true }),
     compare(dates, lowSleep, procr, { id: 'sleep-procr', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'erteleme', unit: 'num', lowerIsBetter: true }),
