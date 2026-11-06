@@ -9,7 +9,7 @@ export const TIME_SLOTS = [
   { key: 'sabaha-karsi', label: 'Sabaha karşı', range: '03–06' },
 ] as const;
 
-/** Uyanınca telefona bakmadan geçirilmesi gereken en az süre (dk) */
+/** Sabah telefon sınırı varsayılanı (dk); asıl değer Ayarlar'dan gelir */
 export const MORNING_PHONE_LIMIT = 20;
 
 export const PLACES = ['Yatakta', 'Evde yalnız', 'Bilgisayar başında', 'Telefonda', 'Dışarıda', 'Sosyal ortam'];

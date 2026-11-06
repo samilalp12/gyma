@@ -9,6 +9,7 @@ import {
   hasActivity,
   isRoutineDone,
   isRoutineDue,
+  morningOkOf,
   screenStatus,
 } from './metrics';
 
@@ -65,8 +66,8 @@ export function disciplineCell(data: AppData) {
     const extra: string[] = [];
     if (day.porn != null) extra.push(day.porn ? 'İçerik: evet' : 'İçerik: yok');
     if (day.urges) extra.push(`Dürtü: ${day.urges}`);
-    if (day.morningPhoneOk != null)
-      extra.push(`Sabah: ${day.morningPhoneMin != null ? `${day.morningPhoneMin} dk ` : ''}${day.morningPhoneOk ? '✓' : '✗'}`);
+    const mOk = morningOkOf(data, day);
+    if (mOk != null) extra.push(`Sabah: ${day.morningPhoneMin != null ? `${day.morningPhoneMin} dk ` : ''}${mOk ? '✓' : '✗'}`);
     const tail = extra.length ? `\n${extra.join(' · ')}` : '';
     if (!day.clean) {
       const cause = day.trigger?.causes?.join(', ');

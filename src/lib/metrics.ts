@@ -1,5 +1,5 @@
 import type { DayLog, FocusSession, Goal, ISODate, Routine, Settings, Task, TrackedApp } from '../db/types';
-import { partOrder } from './constants';
+import { MORNING_PHONE_LIMIT, partOrder } from './constants';
 import { addDaysISO, dateRange, isoWeekday, lastNDays } from './date';
 
 /** Uygulama genelinde tek seferde yüklenen veri seti (kişisel kullanım için küçük). */
@@ -27,6 +27,21 @@ export interface AppData {
 /** Ekran süresi takibi açık mı? (Ayarlar → Ekran süresi) */
 export function screenOn(data: AppData): boolean {
   return data.settings.screenTimeEnabled !== false;
+}
+
+/** Sabah telefonsuz sınırı (dk) — Ayarlar'dan */
+export function morningLimit(data: AppData): number {
+  return data.settings.morningPhoneLimit ?? MORNING_PHONE_LIMIT;
+}
+
+/**
+ * O sabah sınır tutuldu mu? Dakika girildiyse her zaman güncel sınıra göre hesaplanır
+ * (sınır değişince geçmiş de yeniden değerlendirilir); yoksa elle verilen evet/hayır.
+ */
+export function morningOkOf(data: AppData, day: DayLog | undefined): boolean | null {
+  if (!day) return null;
+  if (day.morningPhoneMin != null) return day.morningPhoneMin >= morningLimit(data);
+  return day.morningPhoneOk ?? null;
 }
 
 /* ---------------- Rutin / iş tamamlanma ---------------- */
@@ -231,9 +246,9 @@ export function disciplineStats(data: AppData): DisciplineStats {
     pc = addDaysISO(pc, -1);
   }
 
-  let mc = data.days.get(today)?.morningPhoneOk == null ? addDaysISO(today, -1) : today;
+  let mc = morningOkOf(data, data.days.get(today)) == null ? addDaysISO(today, -1) : today;
   let morningCurrent = 0;
-  while (data.days.get(mc)?.morningPhoneOk === true) {
+  while (morningOkOf(data, data.days.get(mc)) === true) {
     morningCurrent++;
     mc = addDaysISO(mc, -1);
   }
@@ -288,9 +303,10 @@ export function habitStats(data: AppData, dates: ISODate[]): HabitStats {
     }
     if (day?.urges != null) urges.push(day.urges);
     if (day?.procrastination != null) procs.push(day.procrastination);
-    if (day?.morningPhoneOk != null) {
+    const mOk = morningOkOf(data, day);
+    if (mOk != null) {
       morningEntered++;
-      if (day.morningPhoneOk) morningOk++;
+      if (mOk) morningOk++;
     }
     if (day?.morningPhoneMin != null) morningMins.push(day.morningPhoneMin);
     for (const t of data.tasksByDate.get(d) ?? []) movedTasks += t.moved;

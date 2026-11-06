@@ -163,6 +163,12 @@ export function WeeklyPage() {
       suffix: ' gün',
     },
     {
+      label: 'Sabah ilk bakış (ort.)',
+      cur: s.hCur.morningAvgMin != null ? `${Math.round(s.hCur.morningAvgMin)} dk` : '—',
+      prev: s.hPrev.morningAvgMin != null ? `${Math.round(s.hPrev.morningAvgMin)} dk` : '—',
+      delta: pctChange(s.hCur.morningAvgMin, s.hPrev.morningAvgMin),
+    },
+    {
       label: 'Dürtü (günlük ort.)',
       cur: s.hCur.urgesAvg?.toFixed(1) ?? '—',
       prev: s.hPrev.urgesAvg?.toFixed(1) ?? '—',

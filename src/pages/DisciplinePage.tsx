@@ -2,13 +2,14 @@ import { Shield } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heatmap } from '../components/Heatmap';
+import { MorningPhoneCard } from '../components/MorningPhoneCard';
 import { WeightCard } from '../components/WeightCard';
 import { Card, cn, Delta, EmptyState, PageHeader, Stat } from '../components/ui';
 import { useData } from '../hooks/useAppData';
 import { disciplineCell } from '../lib/cells';
-import { MORNING_PHONE_LIMIT, slotLabel, TIME_SLOTS } from '../lib/constants';
+import { slotLabel, TIME_SLOTS } from '../lib/constants';
 import { addDaysISO, fmt, formatMinutes, isoWeekday, lastNDays, WEEKDAY_SHORT } from '../lib/date';
-import { avg, disciplineStats, habitStats, overallScreen, pctChange, screenOn } from '../lib/metrics';
+import { avg, disciplineStats, habitStats, morningLimit, overallScreen, pctChange, screenOn } from '../lib/metrics';
 
 export function DisciplinePage() {
   const data = useData();
@@ -157,7 +158,7 @@ export function DisciplinePage() {
           sub={
             habits.last30.morningEntered
               ? `Seri ${st.morningCurrent} gün${habits.last30.morningAvgMin != null ? ` · ort. ${Math.round(habits.last30.morningAvgMin)} dk sonra bakış` : ''}`
-              : `Check-in’de “ilk ${MORNING_PHONE_LIMIT} dk” sorusunu yanıtla`
+              : `Check-in’de “ilk ${morningLimit(data)} dk” sorusunu yanıtla`
           }
         />
         <Stat
@@ -196,6 +197,8 @@ export function DisciplinePage() {
           }
         />
       </div>
+
+      <MorningPhoneCard />
 
       <WeightCard />
 

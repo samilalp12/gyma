@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lateCheckinUntil: '12:00',
   theme: 'dark',
   screenTimeEnabled: false,
+  morningPhoneLimit: 20,
   focusCategories: [
     { id: 'ders', name: 'Ders', color: '#3987e5' },
     { id: 'proje', name: 'Proje', color: '#199e70' },

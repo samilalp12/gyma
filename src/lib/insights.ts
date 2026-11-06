@@ -1,8 +1,7 @@
 import type { ISODate } from '../db/types';
-import { MORNING_PHONE_LIMIT } from './constants';
 import { lastNDays } from './date';
 import { focusTotal } from './focus';
-import { type AppData, avg, dueRoutines, isRoutineDone, overallScreen, screenOn } from './metrics';
+import { type AppData, avg, dueRoutines, isRoutineDone, morningLimit, morningOkOf, overallScreen, screenOn } from './metrics';
 
 /**
  * Korelasyon kartı: verilerdeki iki grubu (ör. az / çok uyuduğun günler) bir sonuç
@@ -71,8 +70,18 @@ export function computeInsights(data: AppData): { insights: Insight[]; daysWithD
   const screen: Get<number> = (d) => (day(d) ? overallScreen(data, d) : null);
   const focus: Get<number> = (d) => (day(d)?.closed ? focusTotal(data, d) : null);
   const energy: Get<number> = (d) => day(d)?.energy;
-  const morningPhone: Get<boolean> = (d) => day(d)?.morningPhoneOk;
-  const mpA = `Sabah ilk ${MORNING_PHONE_LIMIT} dk telefona bakmadığın günlerde`;
+  const limit = morningLimit(data);
+  const morningPhone: Get<boolean> = (d) => morningOkOf(data, day(d));
+  const mpA = `Sabah ilk ${limit} dk telefona bakmadığın günlerde`;
+  // Dakika verisi: medyandan geç bakılan günler vs erken bakılan günler
+  const mins = dates.map((d) => day(d)?.morningPhoneMin).filter((x): x is number => x != null);
+  const minMed = median(mins);
+  const lateLook: Get<boolean> = (d) => {
+    const v = day(d)?.morningPhoneMin;
+    return v == null || !minMed ? null : v > minMed;
+  };
+  const llA = `Telefona uyandıktan ${Math.round(minMed)} dk’dan sonra baktığın günlerde`;
+  const llB = 'daha erken baktığında';
   const mpB = 'baktığın günlerde';
   const morningDone: Get<boolean> = (d) => {
     const m = dueRoutines(data, d).filter((r) => r.part === 'sabah');
@@ -100,6 +109,9 @@ export function computeInsights(data: AppData): { insights: Insight[]; daysWithD
     compare(dates, morningPhone, focus, { id: 'mphone-focus', aLabel: mpA, bLabel: mpB, metric: 'odak süresi', unit: 'min', lowerIsBetter: false }),
     compare(dates, morningPhone, procr, { id: 'mphone-procr', aLabel: mpA, bLabel: mpB, metric: 'erteleme', unit: 'num', lowerIsBetter: true }),
     compare(dates, morningPhone, urges, { id: 'mphone-urges', aLabel: mpA, bLabel: mpB, metric: 'dürtü', unit: 'num', lowerIsBetter: true }),
+    compare(dates, lateLook, energy, { id: 'mmin-energy', aLabel: llA, bLabel: llB, metric: 'enerji', unit: 'num', lowerIsBetter: false }),
+    compare(dates, lateLook, focus, { id: 'mmin-focus', aLabel: llA, bLabel: llB, metric: 'odak süresi', unit: 'min', lowerIsBetter: false }),
+    compare(dates, lateLook, mood, { id: 'mmin-mood', aLabel: llA, bLabel: llB, metric: 'mood', unit: 'num', lowerIsBetter: false }),
     compare(dates, lowSleep, mood, { id: 'sleep-mood', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'mood', unit: 'num', lowerIsBetter: false }),
     compare(dates, lowSleep, urges, { id: 'sleep-urges', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'dürtü', unit: 'num', lowerIsBetter: true }),
     compare(dates, lowSleep, procr, { id: 'sleep-procr', aLabel: '7 saatten az uyuduğun günlerde', bLabel: '7+ saat uyuduğunda', metric: 'erteleme', unit: 'num', lowerIsBetter: true }),

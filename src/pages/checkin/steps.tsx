@@ -5,9 +5,9 @@ import { addTask, deleteTask, moveTaskToNextDay, setRoutineDone, setTaskDone } f
 import { QuadrantBadge } from '../../components/Eisenhower';
 import { Checkbox, cn, Kbd, ProgressBar } from '../../components/ui';
 import { useData } from '../../hooks/useAppData';
-import { CAUSES, ENERGY_LABELS, MOOD_MAX, MORNING_PHONE_LIMIT, moodEmoji, moodLabel, PLACES, TIME_SLOTS } from '../../lib/constants';
+import { CAUSES, ENERGY_LABELS, MOOD_MAX, moodEmoji, moodLabel, PLACES, TIME_SLOTS } from '../../lib/constants';
 import { addDaysISO, fmt, formatHours, formatMinutes } from '../../lib/date';
-import { dueRoutines, isRoutineDone } from '../../lib/metrics';
+import { dueRoutines, isRoutineDone, morningLimit } from '../../lib/metrics';
 import { type CheckinForm, parseMinutes, parsePhoneTotal, parseSleep } from './form';
 
 type StepProps = { form: CheckinForm; update: (p: Partial<CheckinForm>) => void };
@@ -355,6 +355,7 @@ function YesNo({
 
 export function StepDiscipline({ form, update }: StepProps) {
   // Klavye: E/H aktif soruyu yanıtlar ve sonrakine geçer; rakamlar dürtü sayısını girer
+  const limit = morningLimit(useData());
   const [row, setRow] = useState<0 | 1 | 2>(form.clean == null ? 0 : form.porn == null ? 1 : 2);
 
   const answer = (v: boolean) => {
@@ -370,7 +371,7 @@ export function StepDiscipline({ form, update }: StepProps) {
   const setMorningMin = (text: string) => {
     const clean = text.replace(/[^0-9]/g, '');
     const n = clean ? Number(clean) : null;
-    update({ morningMin: clean, ...(n != null ? { morningOk: n >= MORNING_PHONE_LIMIT } : {}) });
+    update({ morningMin: clean, ...(n != null ? { morningOk: n >= limit } : {}) });
   };
   useHotkeys((key) => {
     if (key === 'e' || key === 'y') answer(true);
@@ -417,7 +418,7 @@ export function StepDiscipline({ form, update }: StepProps) {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm font-medium">Uyanınca ilk {MORNING_PHONE_LIMIT} dk telefona bakmadım</div>
+              <div className="text-sm font-medium">Uyanınca ilk {limit} dk telefona bakmadım</div>
               <div className="text-xs text-muted">Sabah telefonsuz başlangıç günün enerjisini belirliyor</div>
             </div>
             <div className="flex gap-2">

@@ -17,6 +17,8 @@ export interface Settings {
   /** 'HH:mm' — bu saatten önce check-in açılırsa, dün kapanmadıysa dünü doldurur */
   lateCheckinUntil: string;
   theme: Theme;
+  /** Uyanınca telefona bakmadan geçirilmesi gereken en az süre (dk) */
+  morningPhoneLimit?: number;
   /** Ekran süresi takibi açık mı (kapalıyken check-in, skor ve grafiklerden çıkar) */
   screenTimeEnabled?: boolean;
   /** Odak kategorileri (ders, kitap…) */

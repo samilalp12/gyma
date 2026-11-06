@@ -29,6 +29,7 @@ export function SettingsPage() {
     <>
       <PageHeader title="Ayarlar" />
       <div className="space-y-5">
+        <MorningLimitSection />
         <ScreenToggle />
         {settings.screenTimeEnabled !== false && <AppsSection />}
         <RoutinesSection />
@@ -43,6 +44,43 @@ export function SettingsPage() {
         <DataSection />
       </div>
     </>
+  );
+}
+
+/* ---------------- Sabah telefon sınırı ---------------- */
+
+function MorningLimitSection() {
+  const { settings } = useData();
+  const value = settings.morningPhoneLimit ?? 20;
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  const save = (n: number) => void saveSettings({ morningPhoneLimit: Math.max(1, Math.min(240, Math.round(n))) });
+  return (
+    <Card title="Sabah telefonsuz başlangıç">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span>Uyanınca en az</span>
+        <input
+          inputMode="numeric"
+          className="input w-16 py-1.5 text-right tabular-nums"
+          value={text}
+          onChange={(e) => setText(e.target.value.replace(/[^0-9]/g, ''))}
+          onBlur={() => (Number(text) > 0 ? save(Number(text)) : setText(String(value)))}
+          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          aria-label="Sabah telefon sınırı (dakika)"
+        />
+        <span>dk telefona bakma</span>
+        <span className="ml-1 flex gap-1">
+          {[15, 20, 30, 45, 60].map((m) => (
+            <button key={m} className={cn('chip px-2', value === m && 'chip-on')} onClick={() => save(m)}>
+              {m}
+            </button>
+          ))}
+        </span>
+      </div>
+      <p className="mt-2 text-xs text-muted">
+        Check-in’deki soru, Disiplin kartı ve grafik bu sınırı kullanır. Dakikasını girdiğin geçmiş günler de yeni sınıra göre yeniden değerlendirilir.
+      </p>
+    </Card>
   );
 }
 
